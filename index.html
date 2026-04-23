@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#fafaf7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BBLS 2.0">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<title>BBLS 2.0 Tracker</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    /* Modern light theme, warm off-white base */
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f5f3ec;
+    --surface-3: #ebe8dd;
+    --border: #e8e5d8;
+    --border-strong: #d4d0c0;
+    --text: #0f0f0e;
+    --text-dim: #6b6b63;
+    --text-faint: #a8a69c;
+    --accent: #ff4d00;
+    --accent-dim: #d93f00;
+    --accent-soft: #fff0e6;
+    --volume: #2563eb;
+    --volume-soft: #eff6ff;
+    --strength: #ff4d00;
+    --strength-soft: #fff0e6;
+    --deload: #78716c;
+    --deload-soft: #f3f3f0;
+    --peak: #9333ea;
+    --peak-soft: #faf5ff;
+    --full-deload: #059669;
+    --full-deload-soft: #ecfdf5;
+    --shadow-sm: 0 1px 2px rgba(24, 24, 20, 0.04);
+    --shadow-md: 0 2px 10px rgba(24, 24, 20, 0.05), 0 1px 3px rgba(24, 24, 20, 0.04);
+    --shadow-lg: 0 12px 32px rgba(24, 24, 20, 0.08), 0 2px 8px rgba(24, 24, 20, 0.04);
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+
+  /* Typography */
+  .display {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Header */
+  header {
+    padding: 20px 18px 14px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: rgba(250, 250, 247, 0.88);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    z-index: 10;
+  }
+  .brand {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .brand-name {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 900;
+    font-size: 20px;
+    letter-spacing: -0.03em;
+  }
+  .brand-name span { color: var(--accent); }
+  .week-indicator {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .phase-line {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .phase-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--surface-2);
+    color: var(--text-dim);
+  }
+  .phase-badge.volume-deload { color: var(--deload); background: var(--deload-soft); }
+  .phase-badge.volume { color: var(--volume); background: var(--volume-soft); }
+  .phase-badge.strength { color: var(--strength); background: var(--strength-soft); }
+  .phase-badge.peak { color: var(--peak); background: var(--peak-soft); }
+  .phase-badge.strength-week { color: #ffffff; background: var(--accent); }
+  .phase-badge.full-deload { color: var(--full-deload); background: var(--full-deload-soft); }
+
+  /* Controls */
+  .controls {
+    display: flex; gap: 10px;
+    padding: 14px 18px;
+    align-items: stretch;
+  }
+  .week-stepper {
+    display: flex; align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    flex: 1;
+    min-width: 0;
+  }
+  .week-stepper button {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background 0.15s;
+  }
+  .week-stepper button:active { background: var(--surface-3); }
+  .week-stepper button:disabled { color: var(--text-faint); cursor: not-allowed; }
+  .week-stepper select {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 14px;
+    text-align: center;
+    text-align-last: center;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0 4px;
+    cursor: pointer;
+    min-width: 0;
+  }
+  .week-stepper select option { background: var(--surface); color: var(--text); }
+
+  .day-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .day-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 0 14px;
+    height: 44px;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    touch-action: manipulation;
+  }
+  .day-toggle button.active {
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  /* Day cards */
+  main { padding: 0 18px 100px; }
+
+  .day-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .day-card.open { box-shadow: var(--shadow-md); }
+  .day-card.done { border-color: rgba(5, 150, 105, 0.3); background: linear-gradient(to bottom, var(--full-deload-soft) 0%, var(--surface) 60%); }
+
+  .day-header {
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .day-title {
+    flex: 1;
+    min-width: 0;
+  }
+  .day-day {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+  }
+  .day-focus {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .chevron {
+    color: var(--text-faint);
+    transition: transform 0.2s;
+  }
+  .day-card.open .chevron { transform: rotate(180deg); }
+
+  .done-indicator {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    touch-action: manipulation;
+  }
+  .done-indicator.done {
+    background: var(--full-deload);
+    border-color: var(--full-deload);
+  }
+  .done-indicator.done::after {
+    content: '✓';
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .day-body {
+    padding: 0 16px 16px;
+    display: none;
+  }
+  .day-card.open .day-body { display: block; }
+
+  /* Exercises */
+  .exercise {
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+  .exercise:first-child { border-top: none; padding-top: 4px; }
+
+  .ex-name {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .ex-primary-info {
+    display: flex; align-items: baseline; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .ex-weight-display {
+    display: flex; align-items: baseline; gap: 6px;
+  }
+  .ex-weight {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .ex-weight.no-1rm {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    font-style: normal;
+    font-family: 'Archivo', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--accent-soft);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px dashed var(--accent);
+    transition: background 0.15s;
+    touch-action: manipulation;
+  }
+  .ex-weight.no-1rm:active { background: #ffe0cc; }
+  .ex-weight-unit {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'Geist', sans-serif;
+    font-weight: 500;
+  }
+  .ex-scheme {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .ex-intensity {
+    font-size: 12px;
+    color: var(--text-faint);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .ex-rir-info {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ex-rir-scheme {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .ex-rir-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--surface-2);
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .ex-note {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-faint);
+    font-style: italic;
+  }
+  .ex-backoff {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(255, 77, 0, 0.15);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .ex-backoff strong { color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-family: 'Archivo', sans-serif; font-weight: 800; }
+
+  .notes-input {
+    margin-top: 12px;
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 13px;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .notes-input:focus { outline: none; border-color: var(--accent); }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 640px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    border-top: 1px solid var(--border);
+    padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+    display: flex;
+    gap: 8px;
+    z-index: 5;
+    box-shadow: 0 -6px 24px rgba(24, 24, 20, 0.04);
+  }
+  .bottom-btn {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 12px;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .bottom-btn:active { background: var(--surface-2); }
+  .bottom-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(255, 77, 0, 0.25);
+  }
+  .bottom-btn.primary:active { background: var(--accent-dim); }
+  .bottom-btn.pulse {
+    animation: pulse-accent 2s ease-in-out infinite;
+  }
+  @keyframes pulse-accent {
+    0%, 100% { box-shadow: 0 2px 8px rgba(255, 77, 0, 0.25); }
+    50% { box-shadow: 0 2px 18px rgba(255, 77, 0, 0.55); }
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(24, 24, 20, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 50;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 640px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
+    animation: slideUp 0.25s ease-out;
+    box-shadow: var(--shadow-lg);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-title {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+  }
+  .modal-close {
+    background: var(--surface-2);
+    border: none;
+    color: var(--text-dim);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .modal-close:active { background: var(--surface-3); }
+  .modal-section { margin-bottom: 18px; }
+  .modal-section-title {
+    font-family: 'Archivo', sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  /* 1RM inputs */
+  .rm-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rm-row:last-child { border-bottom: none; }
+  .rm-name {
+    flex: 1;
+    font-size: 14px;
+    min-width: 0;
+  }
+  .rm-input-wrap {
+    display: flex; align-items: center;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .rm-input-wrap:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 77, 0, 0.12);
+  }
+  .rm-input-wrap.highlight {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    animation: highlight-flash 0.9s ease-out;
+  }
+  @keyframes highlight-flash {
+    0% { background: var(--accent); }
+    100% { background: var(--accent-soft); }
+  }
+  .rm-input {
+    width: 70px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    padding: 10px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    text-align: right;
+  }
+  .rm-input:focus { outline: none; }
+  .rm-unit {
+    padding: 0 10px 0 0;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* Settings */
+  .settings-group { display: flex; flex-direction: column; gap: 10px; }
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+  }
+  .settings-label { font-size: 14px; }
+  .settings-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .round-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+  }
+  .action-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    width: 100%;
+    touch-action: manipulation;
+    transition: background 0.15s;
+  }
+  .action-btn.danger { color: #dc2626; border-color: rgba(220, 38, 38, 0.2); }
+  .action-btn:active { background: var(--surface-2); }
+
+  .toast {
+    position: fixed;
+    bottom: 100px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a18;
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    box-shadow: var(--shadow-lg);
+  }
+  .toast.show { opacity: 1; }
+
+  /* Info cards */
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    display: flex; gap: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    box-shadow: var(--shadow-sm);
+  }
+  .info-card .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+  .info-card.deload { background: var(--deload-soft); border-color: transparent; }
+  .info-card.deload .dot { background: var(--volume); }
+  .info-card.strength { background: var(--strength-soft); border-color: transparent; }
+  .info-card.strength .dot { background: var(--accent); }
+  .info-card.full-deload { background: var(--full-deload-soft); border-color: transparent; }
+  .info-card.full-deload .dot { background: var(--full-deload); }
+  .info-card.onboard { background: var(--accent-soft); border-color: rgba(255, 77, 0, 0.2); }
+  .info-card.onboard .dot { background: var(--accent); }
+  .info-card.onboard strong { color: var(--accent); }
+
+  .hint {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 12px;
+    margin: 20px 0 10px;
+  }
+
+  /* Week-complete banner */
+  .week-complete {
+    margin-top: 4px;
+    margin-bottom: 16px;
+    padding: 20px 18px;
+    background: linear-gradient(135deg, var(--full-deload-soft) 0%, #e0f7ea 100%);
+    border: 1px solid rgba(5, 150, 105, 0.25);
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    animation: week-complete-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes week-complete-pop {
+    0% { transform: scale(0.92); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .week-complete-check {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--full-deload);
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+  }
+  .week-complete-title {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .week-complete-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+  .week-complete-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .week-complete-btn {
+    flex: 1;
+    max-width: 220px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    touch-action: manipulation;
+    border: none;
+    transition: all 0.15s;
+  }
+  .week-complete-btn.primary {
+    background: var(--full-deload);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+  }
+  .week-complete-btn.primary:active { background: #047857; }
+  .week-complete-btn.secondary {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border-strong);
+  }
+
+  @media (min-width: 500px) {
+    .week-stepper select { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-name">BBLS<span>.</span>2.0</div>
+    <div class="week-indicator" id="weekIndicator">W 0 / 48</div>
+  </div>
+  <div class="phase-line" id="phaseLine">
+    <span class="phase-badge">—</span>
+    <span id="phaseDesc">—</span>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="week-stepper">
+    <button id="prevWeek" aria-label="Previous week">−</button>
+    <select id="weekSelect"></select>
+    <button id="nextWeek" aria-label="Next week">+</button>
+  </div>
+  <div class="day-toggle" role="tablist" aria-label="Weekly schedule">
+    <button data-days="3">3</button>
+    <button data-days="4">4</button>
+    <button data-days="5">5</button>
+  </div>
+</div>
+
+<main id="main">
+  <!-- rendered dynamically -->
+</main>
+
+<div class="bottom-bar">
+  <button class="bottom-btn primary" id="btn1RMs">1RMs</button>
+  <button class="bottom-btn" id="btnNotes">Notes</button>
+  <button class="bottom-btn" id="btnSettings">Settings</button>
+</div>
+
+<!-- 1RMs modal -->
+<div class="modal-overlay" id="modal1RM">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Training 1RMs</div>
+      <button class="modal-close" data-close="modal1RM">×</button>
+    </div>
+    <div class="modal-section">
+      <div class="settings-desc" style="margin-bottom:14px">These drive the target weights on %1RM lifts. Update after every Strength Week (weeks 15, 31, 47) based on your AMRAP set — see notes.</div>
+      <div id="rmList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-overlay" id="modalSettings">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Settings</div>
+      <button class="modal-close" data-close="modalSettings">×</button>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Preferences</div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Round weights to</div>
+          <div class="settings-desc">nearest increment for %1RM calculations</div>
+        </div>
+        <select class="round-select" id="roundSelect">
+          <option value="5">5 lb</option>
+          <option value="2.5">2.5 lb</option>
+          <option value="1">1 lb</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Data</div>
+      <div class="settings-group">
+        <button class="action-btn" id="btnExport">Export data (JSON)</button>
+        <button class="action-btn" id="btnImport">Import data (JSON)</button>
+        <input type="file" id="fileImport" accept=".json,application/json" style="display:none">
+        <button class="action-btn danger" id="btnReset">Reset all data</button>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">About</div>
+      <div class="settings-desc">Reference tool for Beyond Bigger Leaner Stronger (Mike Matthews). Data is saved locally on this device. Use the export button to back up.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+//==============================================================================
+// CONSTANTS: Periodization data (extracted from BBLS 2.0 spreadsheets)
+//==============================================================================
+
+// 16-week primary pattern, repeats 3x for weeks 1-48
+// Each entry: intensity (%1RM), reps (string for AMRAP support), sets, phase
+const PRIMARY_PATTERN = [
+  { intensity: 0.70, reps: "10",    sets: 4, phase: "volume" },
+  { intensity: 0.75, reps: "8",     sets: 4, phase: "volume" },
+  { intensity: 0.80, reps: "6",     sets: 4, phase: "volume" },
+  { intensity: 0.80, reps: "3",     sets: 2, phase: "volume-deload" },
+  { intensity: 0.75, reps: "8",     sets: 4, phase: "volume" },
+  { intensity: 0.80, reps: "6",     sets: 4, phase: "volume" },
+  { intensity: 0.85, reps: "4",     sets: 4, phase: "volume" },
+  { intensity: 0.85, reps: "2",     sets: 2, phase: "volume-deload" },
+  { intensity: 0.80, reps: "6",     sets: 4, phase: "strength" },
+  { intensity: 0.85, reps: "4",     sets: 4, phase: "strength" },
+  { intensity: 0.90, reps: "2",     sets: 4, phase: "strength" },
+  { intensity: 0.90, reps: "1",     sets: 2, phase: "volume-deload" },
+  { intensity: 0.85, reps: "4",     sets: 4, phase: "peak" },
+  { intensity: 0.90, reps: "2",     sets: 4, phase: "peak" },
+  { intensity: 0.95, reps: "AMRAP", sets: 1, phase: "strength-week",
+    backoff: { intensity: 0.85, reps: "4" } },
+  { intensity: 0.50, reps: "5",     sets: 2, phase: "full-deload" },
+];
+
+// 16-week accessory pattern (reps/sets/RIR)
+const ACCESSORY_PATTERN = [
+  { reps: "10-12", sets: 4, rir: 1 },
+  { reps: "10-12", sets: 4, rir: 1 },
+  { reps: "10-12", sets: 4, rir: 1 },
+  { reps: "8",     sets: 2, rir: 3 },  // volume deload
+  { reps: "8-10",  sets: 4, rir: 1 },
+  { reps: "8-10",  sets: 4, rir: 1 },
+  { reps: "8-10",  sets: 4, rir: 1 },
+  { reps: "6",     sets: 2, rir: 3 },  // volume deload
+  { reps: "8-10",  sets: 4, rir: 1 },
+  { reps: "8-10",  sets: 4, rir: 1 },
+  { reps: "8-10",  sets: 4, rir: 1 },
+  { reps: "6",     sets: 2, rir: 3 },  // volume deload
+  { reps: "6-8",   sets: 4, rir: 1 },
+  { reps: "6-8",   sets: 4, rir: 1 },
+  { reps: "6-8",   sets: 2, rir: 1 },  // strength week
+  { reps: "5",     sets: 2, rir: 3 },  // full deload
+];
+
+const PHASE_LABELS = {
+  "volume":        { label: "Volume",          cls: "volume" },
+  "volume-deload": { label: "Volume Deload",   cls: "volume-deload" },
+  "strength":      { label: "Strength",        cls: "strength" },
+  "peak":          { label: "Peak",            cls: "peak" },
+  "strength-week": { label: "Strength Week",   cls: "strength-week" },
+  "full-deload":   { label: "Full Deload",     cls: "full-deload" },
+};
+
+const PHASE_NOTES = {
+  "volume":        "Hit every rep with good form. RPE ~7-8.",
+  "volume-deload": "Volume deload — half sets. Keep form crisp, recover.",
+  "strength":      "Primary strength phase. Push the working weight.",
+  "peak":          "Peak phase leading into Strength Week.",
+  "strength-week": "Test your 1RM. Set 1: 95% × AMRAP (or attempt true 1RM at ~105%). Then a back-off set at 85% × 4.",
+  "full-deload":   "Full deload: 50% weights, short sets. Recover fully before next macrocycle.",
+};
+
+// Exercise schedules per program × macrocycle × day
+const SCHEDULES = {
+  "3": {
+    1: {
+      "Monday · Push": [
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Close-Grip Bench Press", type: "primary" },
+        { name: "Dumbbell Side Raise", type: "rir" },
+        { name: "Triceps Pressdown", type: "rir" }
+      ],
+      "Wednesday · Pull & Calves": [
+        { name: "Barbell Deadlift", type: "primary" },
+        { name: "Pull-up", type: "rir", note: "BW or Add Wt." },
+        { name: "One-Arm Dumbbell Row", type: "rir" },
+        { name: "Seated Calf Raise", type: "rir" }
+      ],
+      "Friday · Full Body": [
+        { name: "Barbell Back Squat", type: "primary" },
+        { name: "Leg Press", type: "rir" },
+        { name: "Incline Barbell Bench Press", type: "primary" },
+        { name: "Barbell Curl", type: "rir" }
+      ]
+    },
+    2: {
+      "Monday · Push": [
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Dip", type: "rir", note: "BW or Add Wt." },
+        { name: "Dumbbell Rear Delt Fly", type: "rir" },
+        { name: "EZ-Bar Skullcrusher", type: "rir" }
+      ],
+      "Wednesday · Pull & Calves": [
+        { name: "Trap-Bar Deadlift", type: "primary" },
+        { name: "Chin-up", type: "rir", note: "BW or Add Wt." },
+        { name: "Seated Cable Row", type: "rir" },
+        { name: "Standing Calf Raise", type: "rir" }
+      ],
+      "Friday · Full Body": [
+        { name: "Barbell Front Squat", type: "primary" },
+        { name: "Romanian Deadlift", type: "rir" },
+        { name: "Reverse-Grip Bench Press", type: "primary" },
+        { name: "Cable Curl", type: "rir" }
+      ]
+    },
+    3: {
+      "Monday · Push": [
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Close-Grip Bench Press", type: "primary" },
+        { name: "Dumbbell Side Raise", type: "rir" },
+        { name: "Triceps Overhead Press", type: "rir" }
+      ],
+      "Wednesday · Pull & Calves": [
+        { name: "Sumo Deadlift", type: "primary" },
+        { name: "Pull-up", type: "rir", note: "BW or Add Wt." },
+        { name: "T-Bar Row", type: "rir" },
+        { name: "Seated Calf Raise", type: "rir" }
+      ],
+      "Friday · Full Body": [
+        { name: "Barbell Back Squat", type: "primary" },
+        { name: "Walking Dumbbell Lunge", type: "rir" },
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "EZ-Bar Preacher Curl", type: "rir" }
+      ]
+    }
+  },
+  "4": {
+    1: {
+      "Monday · Upper Body A": [
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Close-Grip Bench Press", type: "primary" },
+        { name: "Dumbbell Side Raise", type: "rir" },
+        { name: "Triceps Pressdown", type: "rir" }
+      ],
+      "Tuesday · Pull & Calves": [
+        { name: "Barbell Deadlift", type: "primary" },
+        { name: "Pull-up", type: "rir", note: "BW or Add Wt." },
+        { name: "One-Arm Dumbbell Row", type: "rir" },
+        { name: "Seated Calf Raise", type: "rir" }
+      ],
+      "Thursday · Upper Body B": [
+        { name: "Standing Military Press", type: "primary" },
+        { name: "Incline Barbell Bench Press", type: "primary" },
+        { name: "Seated Cable Row", type: "rir" },
+        { name: "Barbell Curl", type: "rir" }
+      ],
+      "Friday · Legs & Calves": [
+        { name: "Barbell Back Squat", type: "primary" },
+        { name: "Leg Press", type: "rir" },
+        { name: "Leg Curl (Lying or Seated)", type: "rir" },
+        { name: "Leg Press Calf Raise", type: "rir" }
+      ]
+    },
+    2: {
+      "Monday · Upper Body A": [
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Dip", type: "rir", note: "BW or Add Wt." },
+        { name: "Dumbbell Rear Delt Fly", type: "rir" },
+        { name: "EZ-Bar Skullcrusher", type: "rir" }
+      ],
+      "Tuesday · Pull & Calves": [
+        { name: "Trap-Bar Deadlift", type: "primary" },
+        { name: "Chin-up", type: "rir", note: "BW or Add Wt." },
+        { name: "Seated Cable Row", type: "rir" },
+        { name: "Standing Calf Raise", type: "rir" }
+      ],
+      "Thursday · Upper Body B": [
+        { name: "Seated Military Press", type: "primary" },
+        { name: "Reverse-Grip Bench Press", type: "primary" },
+        { name: "Barbell Row", type: "rir" },
+        { name: "Cable Curl", type: "rir" }
+      ],
+      "Friday · Legs & Calves": [
+        { name: "Barbell Front Squat", type: "primary" },
+        { name: "Barbell Good Morning", type: "rir" },
+        { name: "Walking Dumbbell Lunge", type: "rir" },
+        { name: "Seated Calf Raise", type: "rir" }
+      ]
+    },
+    3: {
+      "Monday · Upper Body A": [
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Close-Grip Bench Press", type: "primary" },
+        { name: "Dumbbell Side Raise", type: "rir" },
+        { name: "Triceps Overhead Press", type: "rir" }
+      ],
+      "Tuesday · Pull & Calves": [
+        { name: "Sumo Deadlift", type: "primary" },
+        { name: "Pull-up", type: "rir", note: "BW or Add Wt." },
+        { name: "T-Bar Row", type: "rir" },
+        { name: "Seated Calf Raise", type: "rir" }
+      ],
+      "Thursday · Upper Body B": [
+        { name: "Push Press", type: "primary" },
+        { name: "Incline Barbell Bench Press", type: "primary" },
+        { name: "One-Arm Dumbbell Row", type: "rir" },
+        { name: "EZ-Bar Preacher Curl", type: "rir" }
+      ],
+      "Friday · Legs & Calves": [
+        { name: "Barbell Back Squat", type: "primary" },
+        { name: "Romanian Deadlift", type: "rir" },
+        { name: "Bulgarian Split Squat", type: "rir" },
+        { name: "Leg Press Calf Raise", type: "rir" }
+      ]
+    }
+  },
+  "5": {
+    1: {
+      "Monday · Upper Body A": [
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Close-Grip Bench Press", type: "primary" },
+        { name: "Dumbbell Side Raise", type: "rir" },
+        { name: "Triceps Pressdown", type: "rir" }
+      ],
+      "Tuesday · Pull & Calves": [
+        { name: "Barbell Deadlift", type: "primary" },
+        { name: "Pull-up", type: "rir", note: "BW or Add Wt." },
+        { name: "One-Arm Dumbbell Row", type: "rir" },
+        { name: "Seated Calf Raise", type: "rir" }
+      ],
+      "Wednesday · Upper Body B": [
+        { name: "Standing Military Press", type: "primary" },
+        { name: "Machine Rear Delt Fly", type: "rir" },
+        { name: "Alternating Dumbbell Curl", type: "rir" },
+        { name: "Dumbbell Side Raise", type: "rir" }
+      ],
+      "Thursday · Legs & Calves": [
+        { name: "Barbell Back Squat", type: "primary" },
+        { name: "Leg Press", type: "rir" },
+        { name: "Leg Curl (Lying or Seated)", type: "rir" },
+        { name: "Leg Press Calf Raise", type: "rir" }
+      ],
+      "Friday · Upper Body C": [
+        { name: "Incline Barbell Bench Press", type: "primary" },
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Seated Cable Row", type: "rir" },
+        { name: "Barbell Curl", type: "rir" }
+      ]
+    },
+    2: {
+      "Monday · Upper Body A": [
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Dip", type: "rir", note: "BW or Add Wt." },
+        { name: "Dumbbell Rear Delt Fly", type: "rir" },
+        { name: "EZ-Bar Skullcrusher", type: "rir" }
+      ],
+      "Tuesday · Pull & Calves": [
+        { name: "Trap-Bar Deadlift", type: "primary" },
+        { name: "Chin-up", type: "rir", note: "BW or Add Wt." },
+        { name: "Seated Cable Row", type: "rir" },
+        { name: "Standing Calf Raise", type: "rir" }
+      ],
+      "Wednesday · Upper Body B": [
+        { name: "Seated Military Press", type: "primary" },
+        { name: "Dumbbell Side Raise", type: "rir" },
+        { name: "Hammer Curl", type: "rir" },
+        { name: "Dumbbell Rear Delt Fly", type: "rir" }
+      ],
+      "Thursday · Legs & Calves": [
+        { name: "Barbell Front Squat", type: "primary" },
+        { name: "Barbell Good Morning", type: "rir" },
+        { name: "Walking Dumbbell Lunge", type: "rir" },
+        { name: "Seated Calf Raise", type: "rir" }
+      ],
+      "Friday · Upper Body C": [
+        { name: "Reverse-Grip Bench Press", type: "primary" },
+        { name: "Dumbbell Bench Press", type: "rir" },
+        { name: "Barbell Row", type: "rir" },
+        { name: "Cable Curl", type: "rir" }
+      ]
+    },
+    3: {
+      "Monday · Upper Body A": [
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "Close-Grip Bench Press", type: "primary" },
+        { name: "Dumbbell Side Raise", type: "rir" },
+        { name: "Triceps Overhead Press", type: "rir" }
+      ],
+      "Tuesday · Pull & Calves": [
+        { name: "Sumo Deadlift", type: "primary" },
+        { name: "Pull-up", type: "rir", note: "BW or Add Wt." },
+        { name: "T-Bar Row", type: "rir" },
+        { name: "Seated Calf Raise", type: "rir" }
+      ],
+      "Wednesday · Upper Body B": [
+        { name: "Push Press", type: "primary" },
+        { name: "Machine Rear Delt Fly", type: "rir" },
+        { name: "Alternating Dumbbell Curl", type: "rir" },
+        { name: "Cable Side Raise", type: "rir" }
+      ],
+      "Thursday · Legs & Calves": [
+        { name: "Barbell Back Squat", type: "primary" },
+        { name: "Romanian Deadlift", type: "rir" },
+        { name: "Bulgarian Split Squat", type: "rir" },
+        { name: "Leg Press Calf Raise", type: "rir" }
+      ],
+      "Friday · Upper Body C": [
+        { name: "Incline Barbell Bench Press", type: "primary" },
+        { name: "Barbell Bench Press", type: "primary" },
+        { name: "One-Arm Dumbbell Row", type: "rir" },
+        { name: "EZ-Bar Preacher Curl", type: "rir" }
+      ]
+    }
+  }
+};
+
+// Canonical list of every %1RM-based lift across all programs (for 1RM management)
+const ALL_PRIMARY_LIFTS = [
+  "Barbell Bench Press",
+  "Close-Grip Bench Press",
+  "Incline Barbell Bench Press",
+  "Reverse-Grip Bench Press",
+  "Barbell Back Squat",
+  "Barbell Front Squat",
+  "Barbell Deadlift",
+  "Trap-Bar Deadlift",
+  "Sumo Deadlift",
+  "Standing Military Press",
+  "Seated Military Press",
+  "Push Press"
+];
+
+//==============================================================================
+// STATE: Persistent user data
+//==============================================================================
+
+const STORAGE_KEY = "bbls2_tracker_v1";
+
+const DEFAULT_STATE = {
+  v: 1,
+  scheduleMode: "4",
+  currentWeek: 1,
+  oneRMs: {},
+  completed: {},  // "week_day" => true
+  notes: {},      // "week_day" => string
+  openDays: {},   // "week_day" => bool (UI state, which day cards are open)
+  roundTo: 5
+};
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { ...DEFAULT_STATE };
+    const parsed = JSON.parse(raw);
+    // merge with defaults for forward compat
+    return { ...DEFAULT_STATE, ...parsed,
+      oneRMs: { ...DEFAULT_STATE.oneRMs, ...(parsed.oneRMs || {}) },
+      completed: { ...(parsed.completed || {}) },
+      notes: { ...(parsed.notes || {}) },
+      openDays: { ...(parsed.openDays || {}) }
+    };
+  } catch (e) {
+    console.warn("Could not load state, using defaults", e);
+    return { ...DEFAULT_STATE };
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error("Could not save state", e);
+    showToast("Couldn't save — storage may be full");
+  }
+}
+
+function dayKey(week, day) { return `w${week}__${day}`; }
+
+//==============================================================================
+// LOGIC: Week → macrocycle, phase, pattern
+//==============================================================================
+
+function getWeekInfo(week) {
+  // week is 1-48
+  const macrocycle = Math.ceil(week / 16);       // 1, 2, or 3
+  const weekInMacro = ((week - 1) % 16) + 1;     // 1-16
+  const mesocycle = Math.ceil(weekInMacro / 4);  // 1-4 within macro
+  const absMeso = ((macrocycle - 1) * 4) + mesocycle;  // 1-12 overall
+  const primary = PRIMARY_PATTERN[weekInMacro - 1];
+  const accessory = ACCESSORY_PATTERN[weekInMacro - 1];
+  return { week, macrocycle, weekInMacro, mesocycle, absMeso, primary, accessory };
+}
+
+function roundWeight(w) {
+  const incr = state.roundTo || 5;
+  return Math.round(w / incr) * incr;
+}
+
+function targetWeight(lift, intensity) {
+  const oneRM = state.oneRMs[lift];
+  if (!oneRM || oneRM <= 0) return null;
+  return roundWeight(oneRM * intensity);
+}
+
+//==============================================================================
+// RENDERING
+//==============================================================================
+
+function render() {
+  renderHeader();
+  renderWeekSelector();
+  renderDayToggle();
+  renderMain();
+}
+
+function renderHeader() {
+  const info = getWeekInfo(state.currentWeek);
+  document.getElementById('weekIndicator').textContent =
+    `W ${state.currentWeek} / 48  ·  M${info.macrocycle}.${info.mesocycle}.${((info.weekInMacro - 1) % 4) + 1}`;
+
+  const phaseInfo = PHASE_LABELS[info.primary.phase];
+  const phaseLine = document.getElementById('phaseLine');
+  phaseLine.innerHTML = `
+    <span class="phase-badge ${phaseInfo.cls}">${phaseInfo.label}</span>
+    <span id="phaseDesc">Macrocycle ${info.macrocycle} · Week ${info.weekInMacro} of 16</span>
+  `;
+}
+
+function renderWeekSelector() {
+  const sel = document.getElementById('weekSelect');
+  if (sel.options.length === 0) {
+    for (let i = 1; i <= 48; i++) {
+      const info = getWeekInfo(i);
+      const phase = PHASE_LABELS[info.primary.phase].label;
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `Week ${i}  ·  ${phase}`;
+      sel.appendChild(opt);
+    }
+  }
+  sel.value = state.currentWeek;
+  document.getElementById('prevWeek').disabled = state.currentWeek <= 1;
+  document.getElementById('nextWeek').disabled = state.currentWeek >= 48;
+}
+
+function renderDayToggle() {
+  document.querySelectorAll('.day-toggle button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.days === state.scheduleMode);
+  });
+}
+
+function renderMain() {
+  const main = document.getElementById('main');
+  const info = getWeekInfo(state.currentWeek);
+  const schedule = SCHEDULES[state.scheduleMode][info.macrocycle];
+
+  let html = '';
+
+  // Week-complete banner — shows when ALL scheduled days for this week are checked off
+  if (isWeekComplete(state.currentWeek, state.scheduleMode)) {
+    const isLastWeek = state.currentWeek >= 48;
+    html += `<div class="week-complete">
+      <div class="week-complete-check">✓</div>
+      <div class="week-complete-title">Week ${state.currentWeek} complete</div>
+      <div class="week-complete-sub">${isLastWeek
+        ? 'You just finished the entire 48-week program. Monster.'
+        : 'Nice work. Ready to move on?'}</div>
+      ${!isLastWeek ? `<div class="week-complete-actions">
+        <button class="week-complete-btn primary" data-action="advance-week">Start Week ${state.currentWeek + 1} →</button>
+      </div>` : ''}
+    </div>`;
+  }
+
+  // Onboarding hint when no 1RMs set yet
+  const has1RMs = Object.values(state.oneRMs).some(v => v > 0);
+  if (!has1RMs) {
+    html += `<div class="info-card onboard">
+      <div class="dot"></div>
+      <div><strong>Set your 1RMs first</strong> — tap the orange <strong>1RMs</strong> button below (or any <em>set 1RM →</em> chip) to enter your current training maxes. Target weights appear once they're in.</div>
+    </div>`;
+  }
+
+  // Phase info card
+  const phaseNote = PHASE_NOTES[info.primary.phase];
+  if (phaseNote) {
+    const cls = info.primary.phase === 'strength-week' ? 'strength' :
+                info.primary.phase === 'full-deload' ? 'full-deload' :
+                info.primary.phase === 'volume-deload' ? 'deload' : '';
+    html += `<div class="info-card ${cls}">
+      <div class="dot"></div>
+      <div>${phaseNote}</div>
+    </div>`;
+  }
+
+  // Days
+  for (const [dayName, exercises] of Object.entries(schedule)) {
+    const key = dayKey(state.currentWeek, dayName);
+    const done = !!state.completed[key];
+    const open = !!state.openDays[key];
+    const [day, focus] = dayName.split(' · ');
+
+    html += `<div class="day-card ${open ? 'open' : ''} ${done ? 'done' : ''}" data-key="${escapeAttr(key)}">
+      <div class="day-header" data-action="toggle-day">
+        <div class="day-title">
+          <div class="day-day">${escapeHTML(day)}</div>
+          <div class="day-focus">${escapeHTML(focus)}</div>
+        </div>
+        <div class="done-indicator ${done ? 'done' : ''}" data-action="toggle-done" role="checkbox" aria-checked="${done}" aria-label="Mark workout complete"></div>
+        <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="day-body">
+        ${exercises.map(ex => renderExercise(ex, info)).join('')}
+        <textarea class="notes-input" data-notes-key="${escapeAttr(key)}" placeholder="Notes for this day…">${escapeHTML(state.notes[key] || '')}</textarea>
+      </div>
+    </div>`;
+  }
+
+  main.innerHTML = html;
+  attachDayHandlers();
+
+  // Wire up the advance-week button if it's rendered
+  const advBtn = main.querySelector('[data-action="advance-week"]');
+  if (advBtn) {
+    advBtn.addEventListener('click', () => {
+      if (state.currentWeek < 48) {
+        state.currentWeek++;
+        saveState();
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast(`Moved to Week ${state.currentWeek}`);
+      }
+    });
+  }
+
+  // Pulse 1RMs button if empty state
+  const btn1RMs = document.getElementById('btn1RMs');
+  btn1RMs.classList.toggle('pulse', !has1RMs);
+}
+
+function isWeekComplete(week, scheduleMode) {
+  const info = getWeekInfo(week);
+  const schedule = SCHEDULES[scheduleMode][info.macrocycle];
+  if (!schedule) return false;
+  const dayNames = Object.keys(schedule);
+  if (dayNames.length === 0) return false;
+  return dayNames.every(day => !!state.completed[dayKey(week, day)]);
+}
+
+function renderExercise(ex, info) {
+  if (ex.type === 'primary') {
+    const p = info.primary;
+    const intensityPct = Math.round(p.intensity * 100);
+    const wt = targetWeight(ex.name, p.intensity);
+    const scheme = `${p.sets} × ${p.reps}`;
+    let backoffHTML = '';
+    if (p.backoff) {
+      const bwt = targetWeight(ex.name, p.backoff.intensity);
+      backoffHTML = `<div class="ex-backoff">
+        <strong>Back-off</strong>
+        <span class="mono">${Math.round(p.backoff.intensity * 100)}% × ${p.backoff.reps}</span>
+        ${bwt !== null ? `<span class="mono" style="color:var(--accent);font-weight:700">${bwt} lb</span>` : `<span class="ex-weight no-1rm" data-action="set-1rm" data-lift="${escapeAttr(ex.name)}">set 1RM →</span>`}
+      </div>`;
+    }
+    return `<div class="exercise">
+      <div class="ex-name">${escapeHTML(ex.name)}</div>
+      <div class="ex-primary-info">
+        <div class="ex-weight-display">
+          ${wt !== null
+            ? `<span class="ex-weight mono">${wt}</span><span class="ex-weight-unit">lb</span>`
+            : `<span class="ex-weight no-1rm" data-action="set-1rm" data-lift="${escapeAttr(ex.name)}">set 1RM →</span>`}
+        </div>
+        <span class="ex-scheme">${scheme}</span>
+        <span class="ex-intensity">${intensityPct}%</span>
+      </div>
+      ${backoffHTML}
+    </div>`;
+  } else {
+    const a = info.accessory;
+    const scheme = `${a.sets} × ${a.reps}`;
+    return `<div class="exercise">
+      <div class="ex-name">${escapeHTML(ex.name)}</div>
+      <div class="ex-rir-info">
+        <span class="ex-rir-scheme">${scheme}</span>
+        <span class="ex-rir-label">${a.rir} RIR</span>
+        ${ex.note ? `<span class="ex-intensity">${escapeHTML(ex.note)}</span>` : ''}
+      </div>
+    </div>`;
+  }
+}
+
+function attachDayHandlers() {
+  document.querySelectorAll('.day-card').forEach(card => {
+    const key = card.dataset.key;
+    card.querySelector('[data-action="toggle-day"]').addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="toggle-done"]')) return;
+      state.openDays[key] = !state.openDays[key];
+      saveState();
+      card.classList.toggle('open', !!state.openDays[key]);
+    });
+    card.querySelector('[data-action="toggle-done"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasComplete = isWeekComplete(state.currentWeek, state.scheduleMode);
+      state.completed[key] = !state.completed[key];
+      saveState();
+      const nowComplete = isWeekComplete(state.currentWeek, state.scheduleMode);
+      // If week-completion status changed, re-render so banner appears/disappears
+      if (wasComplete !== nowComplete) {
+        render();
+        if (nowComplete) {
+          // Scroll banner into view
+          setTimeout(() => {
+            const banner = document.querySelector('.week-complete');
+            if (banner) banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 50);
+        }
+      } else {
+        // Quick toggle without full re-render
+        card.classList.toggle('done', !!state.completed[key]);
+        const ind = e.target;
+        ind.classList.toggle('done', !!state.completed[key]);
+        ind.setAttribute('aria-checked', !!state.completed[key]);
+      }
+    });
+    const textarea = card.querySelector('.notes-input');
+    if (textarea) {
+      textarea.addEventListener('input', () => {
+        const val = textarea.value;
+        if (val.trim() === '') delete state.notes[key];
+        else state.notes[key] = val;
+        saveState();
+      });
+    }
+    // "set 1RM →" chips
+    card.querySelectorAll('[data-action="set-1rm"]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const lift = el.dataset.lift;
+        openModalFocus1RM(lift);
+      });
+    });
+  });
+}
+
+function openModalFocus1RM(lift) {
+  render1RMs();
+  openModal('modal1RM');
+  setTimeout(() => {
+    const input = document.querySelector(`#rmList input[data-lift="${CSS.escape(lift)}"]`);
+    if (input) {
+      input.focus();
+      input.select();
+      const wrap = input.closest('.rm-input-wrap');
+      if (wrap) {
+        wrap.classList.add('highlight');
+        setTimeout(() => wrap.classList.remove('highlight'), 900);
+      }
+      const row = input.closest('.rm-row');
+      if (row) row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, 60);
+}
+
+function render1RMs() {
+  const list = document.getElementById('rmList');
+  list.innerHTML = ALL_PRIMARY_LIFTS.map(lift => {
+    const val = state.oneRMs[lift] ?? '';
+    return `<div class="rm-row">
+      <div class="rm-name">${escapeHTML(lift)}</div>
+      <div class="rm-input-wrap">
+        <input type="number" class="rm-input" data-lift="${escapeAttr(lift)}" value="${val}" inputmode="numeric" pattern="[0-9]*" placeholder="0">
+        <span class="rm-unit">lb</span>
+      </div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.rm-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const lift = inp.dataset.lift;
+      const v = parseFloat(inp.value);
+      if (isNaN(v) || v <= 0) delete state.oneRMs[lift];
+      else state.oneRMs[lift] = v;
+      saveState();
+    });
+  });
+}
+
+//==============================================================================
+// UI HELPERS
+//==============================================================================
+
+function escapeHTML(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+function escapeAttr(s) { return escapeHTML(s); }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+//==============================================================================
+// EVENT WIRING
+//==============================================================================
+
+// Week stepper
+document.getElementById('prevWeek').addEventListener('click', () => {
+  if (state.currentWeek > 1) { state.currentWeek--; saveState(); render(); }
+});
+document.getElementById('nextWeek').addEventListener('click', () => {
+  if (state.currentWeek < 48) { state.currentWeek++; saveState(); render(); }
+});
+document.getElementById('weekSelect').addEventListener('change', (e) => {
+  state.currentWeek = parseInt(e.target.value, 10);
+  saveState();
+  render();
+});
+
+// Schedule mode toggle
+document.querySelectorAll('.day-toggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.scheduleMode = btn.dataset.days;
+    saveState();
+    render();
+  });
+});
+
+// Bottom bar
+document.getElementById('btn1RMs').addEventListener('click', () => {
+  render1RMs();
+  openModal('modal1RM');
+});
+document.getElementById('btnNotes').addEventListener('click', () => {
+  // Expand all day cards for current week and scroll to first
+  const info = getWeekInfo(state.currentWeek);
+  const schedule = SCHEDULES[state.scheduleMode][info.macrocycle];
+  Object.keys(schedule).forEach(day => {
+    state.openDays[dayKey(state.currentWeek, day)] = true;
+  });
+  saveState();
+  render();
+  setTimeout(() => {
+    const firstCard = document.querySelector('.day-card');
+    if (firstCard) firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+});
+document.getElementById('btnSettings').addEventListener('click', () => {
+  document.getElementById('roundSelect').value = String(state.roundTo);
+  openModal('modalSettings');
+});
+
+// Modal close
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(btn.dataset.close));
+});
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+// Round to
+document.getElementById('roundSelect').addEventListener('change', (e) => {
+  state.roundTo = parseFloat(e.target.value);
+  saveState();
+  render();
+});
+
+// Export
+document.getElementById('btnExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `bbls2-tracker-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported');
+});
+
+// Import
+document.getElementById('btnImport').addEventListener('click', () => {
+  document.getElementById('fileImport').click();
+});
+document.getElementById('fileImport').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (typeof imported !== 'object' || !imported) throw new Error('Invalid format');
+      // Merge carefully
+      state = { ...DEFAULT_STATE, ...imported,
+        oneRMs: { ...(imported.oneRMs || {}) },
+        completed: { ...(imported.completed || {}) },
+        notes: { ...(imported.notes || {}) },
+        openDays: { ...(imported.openDays || {}) }
+      };
+      // Sanity clamp
+      state.currentWeek = Math.max(1, Math.min(48, parseInt(state.currentWeek, 10) || 1));
+      if (!["3","4","5"].includes(state.scheduleMode)) state.scheduleMode = "4";
+      saveState();
+      render();
+      closeModal('modalSettings');
+      showToast('Data imported');
+    } catch (err) {
+      showToast('Import failed: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';  // reset so same file can be re-imported
+});
+
+// Reset
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (!confirm('Reset all data? This clears your 1RMs, completed workouts, and notes. This cannot be undone.')) return;
+  state = { ...DEFAULT_STATE };
+  saveState();
+  render();
+  closeModal('modalSettings');
+  showToast('All data reset');
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>
